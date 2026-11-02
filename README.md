@@ -2,6 +2,8 @@
 
 A quieter home screen for Samsung The Frame. Your apps, a photograph and the time, with an interface made for the TV remote.
 
+> **This fork** targets a 2022 Frame (QE55LS03BAUXXU) on firmware 1720 / Tizen 6.5. See the [LS03B 1720 profile](docs/ls03b-1720.md) for what has been checked and what still needs the TV.
+
 ![CleanFrame browser preview using the bundled Manrope font](docs/images/cleanframe-dock.jpg)
 
 I built CleanFrame for one TV: my own Samsung The Frame, running Tizen. I'm sharing the code and setup notes as a starting point for other people to build on.
