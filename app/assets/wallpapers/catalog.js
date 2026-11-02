@@ -1,6 +1,66 @@
 /* Bundled gallery and offline appearance parameters. */
 window.CleanFrameWallpapers = [
   {
+    "id": "westpier-sunset",
+    "name": "West Pier sunset",
+    "src": "assets/wallpapers/westpier-sunset.jpg",
+    "thumb": "assets/wallpapers/westpier-sunset-thumb.jpg",
+    "tone": "dark",
+    "ut": {
+      "tr": "light",
+      "br": "light"
+    },
+    "frostVeil": 0.12,
+    "listColumn": 0,
+    "dockQuiet": false,
+    "clockMist": false
+  },
+  {
+    "id": "westpier-blue",
+    "name": "West Pier blue",
+    "src": "assets/wallpapers/westpier-blue.jpg",
+    "thumb": "assets/wallpapers/westpier-blue-thumb.jpg",
+    "tone": "light",
+    "ut": {
+      "tr": "mist",
+      "br": "mist"
+    },
+    "frostVeil": 0.44,
+    "listColumn": 2,
+    "dockQuiet": true,
+    "clockMist": true
+  },
+  {
+    "id": "westpier-dawn",
+    "name": "West Pier sunrise",
+    "src": "assets/wallpapers/westpier-dawn.jpg",
+    "thumb": "assets/wallpapers/westpier-dawn-thumb.jpg",
+    "tone": "light",
+    "ut": {
+      "tr": "mist",
+      "br": "mist"
+    },
+    "frostVeil": 0.36,
+    "listColumn": 2,
+    "dockQuiet": true,
+    "clockMist": true
+  },
+  {
+    "id": "palacepier-gold",
+    "name": "Palace Pier gold",
+    "src": "assets/wallpapers/palacepier-gold.jpg",
+    "thumb": "assets/wallpapers/palacepier-gold-thumb.jpg",
+    "tone": "dark",
+    "ut": {
+      "tr": "light",
+      "br": "light"
+    },
+    "frostVeil": 0.12,
+    "listColumn": 2,
+    "dockQuiet": false,
+    "clockMist": false
+  },
+  {
     "id": "misty",
     "name": "Misty coast",
     "src": "assets/wallpapers/misty.jpg",
