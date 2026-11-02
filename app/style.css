@@ -2,6 +2,7 @@
 :root{
   --ink:#f4f4f1;
   --ease:cubic-bezier(.2,.7,.2,1);
+  --spring:cubic-bezier(.34,1.56,.64,1);
   --t:180ms;
   --plate:linear-gradient(170deg,rgba(255,255,255,.30),rgba(255,255,255,.16) 58%,rgba(255,255,255,.22));
   --plate-edge:inset 0 1px 0 rgba(255,255,255,.34);
@@ -113,11 +114,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000}
 .monogram span{position:relative;width:1.65em;height:1.65em;display:flex;align-items:center;justify-content:center;border-radius:.4em}.monogram span::after{content:"";position:absolute;top:0;right:0;bottom:0;left:0;border:2px solid currentColor;border-radius:inherit;opacity:.38}
 .native-icon img{position:absolute;top:0;right:0;bottom:0;left:0;width:100%;height:100%;object-fit:contain}
 .native-icon.has-native-icon>span{visibility:hidden}
-.tile .mark{position:absolute;left:calc((var(--tile-w,288px) - 120px) / 2);top:34px;opacity:.84;transition:opacity 160ms linear,transform var(--t) var(--ease)}
-.tile .label{position:absolute;left:4px;right:4px;top:128px;text-align:center;font-size:36px;line-height:44px;letter-spacing:-.8px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.84;transition:opacity 160ms linear}
-.tile .t-name{position:absolute;left:12px;right:12px;top:72px;text-align:center;font-size:40px;line-height:56px;letter-spacing:-1px;font-weight:600;white-space:nowrap;overflow:hidden;opacity:.84;transition:opacity 160ms linear}
+.tile .mark{position:absolute;left:calc((var(--tile-w,288px) - 120px) / 2);top:34px;opacity:.5;transition:opacity 180ms linear,transform 320ms var(--spring)}
+.tile .label{position:absolute;left:4px;right:4px;top:128px;text-align:center;font-size:36px;line-height:44px;letter-spacing:-.8px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.82;transition:opacity 180ms linear}
+.tile .t-name{position:absolute;left:12px;right:12px;top:72px;text-align:center;font-size:40px;line-height:56px;letter-spacing:-1px;font-weight:600;white-space:nowrap;overflow:hidden;opacity:.82;transition:opacity 180ms linear}
 .tile.is-focus .mark,.tile.is-focus .label,.tile.is-focus .t-name,.tile.is-lifted .mark,.tile.is-lifted .label,.tile.is-lifted .t-name{opacity:1}
-.tile.is-focus .mark,.tile.is-lifted .mark{transform:translateY(-3px) scale(1.04)}
+.tile.is-focus .mark,.tile.is-lifted .mark{transform:translateY(-6px) scale(1.16)}
 .tile.is-sel .mark,.tile.is-sel .label,.tile.is-sel .t-name{opacity:.94}
 .tile.k-ph .mark,.tile.k-ph .label,.tile.k-ph.is-focus .mark,.tile.k-ph.is-focus .label{opacity:.5;transform:none}
 .tile .add{position:absolute;left:calc((var(--tile-w,288px) - 56px) / 2);top:40px;width:56px;height:56px;opacity:.84}
@@ -131,8 +132,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000}
 .nudge-r{right:8px}
 .is-lifted .nudge{opacity:.9}
 .is-lifted.no-l .nudge-l,.is-lifted.no-r .nudge-r{opacity:0}
-.tile.is-press .mark{animation:press 300ms var(--ease)}
-@keyframes press{0%{transform:translateY(-3px) scale(1.04)}40%{transform:translateY(0) scale(.94)}100%{transform:translateY(-3px) scale(1.04)}}
+.tile.is-press .mark{animation:press 340ms var(--ease)}
+@keyframes press{0%{transform:translateY(-6px) scale(1.16)}40%{transform:translateY(0) scale(.96)}100%{transform:translateY(-6px) scale(1.16)}}
 .dock.is-empty .shelf{display:none}
 .dock-empty{position:absolute;left:0;top:0;right:0;bottom:0;display:none;flex-direction:column;align-items:center;justify-content:center}
 .dock.is-empty .dock-empty{display:flex}
@@ -421,7 +422,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000}
 .tile-content{position:absolute;top:0;right:0;bottom:0;left:0;border-radius:inherit;transform-origin:50% 50%;transition:opacity 160ms linear,transform var(--t) var(--ease)}
 .f-type .plate{opacity:0}
 .f-type .tile-content{opacity:.62}
-.f-type .tile.is-focus .tile-content{opacity:1;transform:scale(1.06)}
+.f-type .tile.is-focus .tile-content{opacity:1;transform:scale(1.12)}
 .f-type .tile.is-sel .tile-content{opacity:.78}
 .f-type .tile.k-ph .tile-content{opacity:.5}
 .f-type .tile.is-lifted .tile-content{opacity:1;transform:none}

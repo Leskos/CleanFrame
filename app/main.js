@@ -1194,7 +1194,7 @@
     if (n < 0) { w = 912; shelfW = 880; }
     else if (broad) { w = 1728; shelfW = 1696; }
     dockTw = pitch - m.pitch + m.tw;
-    return { x: Math.round((1920 - w) / 2), y: 908 - m.th - 32, h: m.th + 32, w: w, shelf: shelfW, vis: vis, broad: broad, empty: n < 0, tw: dockTw, th: m.th, pitch: pitch };
+    return { x: Math.round((1920 - w) / 2), y: 984 - m.th - 32, h: m.th + 32, w: w, shelf: shelfW, vis: vis, broad: broad, empty: n < 0, tw: dockTw, th: m.th, pitch: pitch };
   }
   /* Five centred: the window moves one tile when focus passes an edge. Broad: keep a
      148px glimpse of the neighbour, as the current dock does. */
