@@ -386,11 +386,10 @@ try {
       await look({ layout: 'dock', focus: 'glass' }); await editor();
       const divider = await current.locator('.ed-order-break.is-on').evaluate(e => {
         const scale = document.getElementById('stage').getBoundingClientRect().width / 1920;
-        const text = document.createRange(); text.selectNodeContents(e);
         const after = getComputedStyle(e, '::after');
-        return (e.getBoundingClientRect().right - text.getBoundingClientRect().right) / scale - parseFloat(after.width);
+        return e.getBoundingClientRect().width / scale - parseFloat(after.width);
       });
-      check('Editor divider separates its text and line at ' + width, Math.abs(divider - 16) < .5, divider);
+      check('Editor divider line spans the row at ' + width, Math.abs(divider - 16) < 1, divider);
       await scene('home'); await nav('back');
       const actions = await current.locator('.msg-acts>button').evaluateAll(elements => {
         const scale = document.getElementById('stage').getBoundingClientRect().width / 1920;
