@@ -1,5 +1,53 @@
 [
   {
+    "id": "westpier-sunset",
+    "name": "West Pier sunset",
+    "src": "assets/wallpapers/westpier-sunset.jpg",
+    "thumb": "assets/wallpapers/westpier-sunset-thumb.jpg",
+    "pos": "50% 50%",
+    "tone": "dark",
+    "credit": "mattbuck",
+    "source": "https://commons.wikimedia.org/wiki/File:Brighton_MMB_31_West_Pier.jpg",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+  },
+  {
+    "id": "westpier-blue",
+    "name": "West Pier blue",
+    "src": "assets/wallpapers/westpier-blue.jpg",
+    "thumb": "assets/wallpapers/westpier-blue-thumb.jpg",
+    "pos": "50% 50%",
+    "tone": "light",
+    "credit": "Arild Vågen",
+    "source": "https://commons.wikimedia.org/wiki/File:West_Pier_April_2018_09.jpg",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+  },
+  {
+    "id": "westpier-dawn",
+    "name": "West Pier sunrise",
+    "src": "assets/wallpapers/westpier-dawn.jpg",
+    "thumb": "assets/wallpapers/westpier-dawn-thumb.jpg",
+    "pos": "50% 50%",
+    "tone": "light",
+    "credit": "Christerajet",
+    "source": "https://commons.wikimedia.org/wiki/File:Sunrise_at_West_Pier.jpg",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+  },
+  {
+    "id": "palacepier-gold",
+    "name": "Palace Pier gold",
+    "src": "assets/wallpapers/palacepier-gold.jpg",
+    "thumb": "assets/wallpapers/palacepier-gold-thumb.jpg",
+    "pos": "50% 50%",
+    "tone": "dark",
+    "credit": "August Schwerdfeger",
+    "source": "https://commons.wikimedia.org/wiki/File:Brighton_Palace_Pier_at_the_golden_hour_2019-05-28_-_2.jpg",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0"
+  },
+  {
     "id": "misty",
     "name": "Misty coast",
     "src": "assets/wallpapers/misty.jpg",

@@ -20,6 +20,19 @@ Reviewed on 20 October 2026. Each of the fifteen linked Unsplash photo pages dis
 | Mint wave | MagicPattern | [Photo page](https://unsplash.com/photos/87PP9Zd7MNo) |
 | Alpine glow | Cristina Gottardi | [Photo page](https://unsplash.com/photos/CSpjU6hYo_0) |
 
+## Brighton photographs (this fork)
+
+Added 2 November 2026 from Wikimedia Commons. Each file page listed the author, “Own work” and the licence below. Backgrounds are centred 16:9 crops at 1920 x 1080; West Pier sunrise was converted from Adobe RGB to sRGB. Thumbnails, panel backdrops and the four material fields derive from those crops.
+
+| Wallpaper | Photographer | Licence | Source |
+| --- | --- | --- | --- |
+| West Pier sunset | mattbuck | CC BY-SA 4.0 | [File page](https://commons.wikimedia.org/wiki/File:Brighton_MMB_31_West_Pier.jpg) |
+| West Pier blue | Arild Vågen | CC BY-SA 4.0 | [File page](https://commons.wikimedia.org/wiki/File:West_Pier_April_2018_09.jpg) |
+| West Pier sunrise | Christerajet | CC BY-SA 4.0 | [File page](https://commons.wikimedia.org/wiki/File:Sunrise_at_West_Pier.jpg) |
+| Palace Pier gold | August Schwerdfeger | CC BY 4.0 | [File page](https://commons.wikimedia.org/wiki/File:Brighton_Palace_Pier_at_the_golden_hour_2019-05-28_-_2.jpg) |
+
+Derived images of the CC BY-SA photos are shared under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/); Palace Pier gold derivatives keep the credit required by [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Changes: cropped, resized, colour-converted where noted, blurred and tinted for glass materials.
+
 The background preparation and material rendering steps are described in [asset generation](assets.md). Full-size original photos and research studies are outside the public source.
 
 ## Fonts and icons

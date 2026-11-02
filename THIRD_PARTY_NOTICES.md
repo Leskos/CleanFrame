@@ -28,6 +28,15 @@ The fifteen photo pages were individually checked on 20 October 2026. Each displ
 
 Photographers retain their rights. Wallpapers, thumbnails, panel backgrounds and material fields derive from the credited photographs and retain their terms. The Unsplash licence permits copying, modification and distribution subject to its restrictions, including on selling unmodified images and building a competing image service.
 
+### Brighton photographs (this fork)
+
+Four further wallpapers come from Wikimedia Commons, checked on 2 November 2026; see the [asset source register](docs/asset-sources.md#brighton-photographs-this-fork):
+
+- West Pier sunset by mattbuck, West Pier blue by Arild Vågen and West Pier sunrise by Christerajet, each under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
+- Palace Pier gold by August Schwerdfeger under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+
+The bundled backgrounds, thumbnails, panel backdrops and material fields are adaptations: cropped, resized, colour-converted where noted, blurred and tinted. Adaptations of the CC BY-SA photos are licensed under CC BY-SA 4.0. Keep these credits with any redistribution. The MIT licence covers CleanFrame's code, not these images.
+
 ## Development dependencies and exports
 
 Development dependencies retain the licences in their npm packages. They are not copied into the TV JavaScript runtime.
