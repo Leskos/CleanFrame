@@ -4,7 +4,7 @@
 
   /* ---------- Bundled data ---------- */
   var ASSETS = 'assets/', ICONS = ASSETS + 'icons/', WP = ASSETS + 'wallpapers/';
-  var CAP = 9, SCRIM_Y = 560;
+  var CAP = 9, SCRIM_Y = 560, DOCK_MIN_TW = 180, RECORD_BRANDS = ['hbomax', 'spotify', 'tubi', 'bbciplayer'];
   var DOCK_MODES = { both: { tw: 288, th: 200, pitch: 296 }, text: { tw: 288, th: 104, pitch: 296 }, icons: { tw: 176, th: 144, pitch: 184 } };
   var GRID_ROW = 240, GRID_COL = 344, COLS = 5;
   var ED_ROW = 80, ED_SEP = 56, ED_VIEW = 752;
@@ -271,8 +271,13 @@
     if (fontMetrics[id] && !fontMetrics[id].fallback) widthCache[key] = width;
     return width;
   }
-  function dockLabelSize(id) { return S.c.apps === 'text' ? (textWidth(app(id).name, 40, 600, -.8, 'primary') > dockTw - 24 ? 34 : 40) : textWidth(app(id).name, 36, 500, -.8, 'primary') > dockTw - 8 ? 32 : 36; }
-  function reducedDockLabel(id) { return S.c.apps !== 'icons' && dockLabelSize(id) === (S.c.apps === 'text' ? 34 : 32); }
+  /* Step labels down as tiles narrow; the focused full name covers any that still clip. */
+  function dockLabelSize(id) {
+    var text = S.c.apps === 'text', sizes = text ? [40, 34, 30] : [36, 32, 30], room = dockTw - (text ? 24 : 8), i;
+    for (i = 0; i < sizes.length - 1; i++) if (textWidth(app(id).name, sizes[i], text ? 600 : 500, -.8, 'primary') <= room) break;
+    return sizes[i];
+  }
+  function reducedDockLabel(id) { return S.c.apps !== 'icons' && dockLabelSize(id) < (S.c.apps === 'text' ? 40 : 36); }
   function actionWidth(text) { return clamp(Math.ceil(textWidth(text, 30, 500, -.3) + 40), 288, 400); }
   function photoLabel(id, compact) {
     var text = app(id).name, size = compact ? 56 : 88, limit = compact ? 640 : 992, width = textWidth(text, size, 600, -1.8, 'display');
@@ -334,7 +339,7 @@
     var legacyList = s.theme === 'list', h = [], recent = [], records = Array.isArray(s.appRecords) ? s.appRecords : [];
     records.slice(0, 256).forEach(function (a) {
       if (!a || !safeId(a.id) || !safeId(a.appId) || typeof a.name !== 'string' || !a.name.trim() || app(a.id)) return;
-      APPS.push({ id: a.id, appId: a.appId, name: a.name.slice(0, 160), brand: ['hbomax', 'spotify', 'tubi'].indexOf(a.brand) >= 0 ? a.brand : '', mark: ['hbomax', 'spotify', 'tubi'].indexOf(a.brand) >= 0, icon: safeIcon(a.icon) });
+      APPS.push({ id: a.id, appId: a.appId, name: a.name.slice(0, 160), brand: RECORD_BRANDS.indexOf(a.brand) >= 0 ? a.brand : '', mark: RECORD_BRANDS.indexOf(a.brand) >= 0, icon: safeIcon(a.icon) });
     });
     (Array.isArray(s.home) ? s.home : Array.isArray(s.dock) ? s.dock : []).forEach(function (id) {
       if (!safeId(id) || h.indexOf(id) >= 0 || h.length >= CAP) return;
@@ -1181,10 +1186,9 @@
 
   function dockGeom(n) {
     var m = DOCK_MODES[S.c.apps], pitch = m.pitch, fits, vis, shelfW, w, broad;
-    // Six full tiles narrow slightly to fit the broad shelf; more keep the scrolling dock.
-    if (n === 6 && n * pitch - 8 > 1696) pitch = Math.floor(1704 / n);
+    // Tiles narrow to fit the broad shelf; below DOCK_MIN_TW the dock scrolls instead.
+    if (n > 5 && n * pitch - 8 > 1696 && Math.floor(1704 / n) - 8 >= DOCK_MIN_TW) pitch = Math.floor(1704 / n);
     fits = n > 5 && n * pitch - 8 <= 1696;
-    if (!fits) pitch = m.pitch;
     vis = Math.max(1, Math.min(fits ? n : 5, n)); shelfW = vis * pitch - 8; w = shelfW + 32;
     broad = S.geom === 'broad' && n > 5 && !fits;
     if (n < 0) { w = 912; shelfW = 880; }
