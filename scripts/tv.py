@@ -3,6 +3,7 @@ import argparse
 import hashlib
 import ipaddress
 import json
+import os
 from pathlib import Path
 import subprocess
 import time
@@ -23,7 +24,7 @@ if not host:
 ipaddress.ip_address(host)
 try:
     settings = load_settings()
-    sdb = settings['sdk_path'] / 'tools/sdb'
+    sdb = settings['sdk_path'] / ('tools/sdb.exe' if os.name == 'nt' else 'tools/sdb')
     if not sdb.is_file():
         raise ValueError('Local SDB tool missing. See docs/development.md.')
     app_id = settings['identity']['app_id']
@@ -39,7 +40,8 @@ except (ValueError, OSError, zipfile.BadZipFile) as error:
 
 
 def run(*command, quiet=False):
-    result = subprocess.run([str(sdb), *command], text=True, capture_output=True, timeout=45)
+    # App names can contain characters outside the Windows console code page.
+    result = subprocess.run([str(sdb), *command], text=True, encoding='utf-8', errors='replace', capture_output=True, timeout=45)
     output = result.stdout + result.stderr
     if not quiet:
         print(output, end='' if output.endswith('\n') else '\n', flush=True)
