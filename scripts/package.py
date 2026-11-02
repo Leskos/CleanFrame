@@ -1,13 +1,16 @@
 """Build and sign through an existing official Tizen SDK profile (macOS/Linux)."""
 import os
 from pathlib import Path
-import pty
-import select
 import signal
+import subprocess
 import tempfile
-import termios
 import time
 import zipfile
+
+if os.name != 'nt':
+    import pty
+    import select
+    import termios
 
 from font_assets import write_widget_archive
 from local_config import ROOT, load_settings, read_password
@@ -81,9 +84,23 @@ def sign(command, password=None, timeout=60):
     return os.waitstatus_to_exitcode(status)
 
 
+def sign_windows(command, password=None, timeout=60):
+    # No pseudo-terminal on Windows: rely on the SDK's saved profile passwords and
+    # close stdin so an unexpected prompt fails instead of waiting for input.
+    if password is not None:
+        raise ValueError('Password files are not supported on Windows. Use SDK-managed profile passwords.')
+    try:
+        result = subprocess.run(command, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=timeout)
+    except subprocess.TimeoutExpired:
+        raise ValueError('SDK signing timed out.') from None
+    if b'password:' in result.stdout.lower():
+        raise ValueError('SDK requested a password. Configure saved profile access or select a protected password file.')
+    return result.returncode
+
+
 def main(root=ROOT):
     settings = load_settings(root)
-    cli = settings['sdk_path'] / 'tools/ide/bin/tizen'
+    cli = settings['sdk_path'] / ('tools/ide/bin/tizen.bat' if os.name == 'nt' else 'tools/ide/bin/tizen')
     if not cli.is_file() or not os.access(cli, os.X_OK):
         raise ValueError('Tizen CLI missing. Set sdk_path in .local/signing.json; see docs/development.md.')
     password = read_password(settings['password_file'], root=root) if settings['password_file'] else None
@@ -94,7 +111,7 @@ def main(root=ROOT):
     # A fresh folder prevents a previous signed widget masking a failed build.
     signed_dir = Path(tempfile.mkdtemp(prefix='signed-', dir=dist))
     command = [str(cli), 'package', '-t', 'wgt', '-s', settings['profile'], '-o', str(signed_dir), '--', str(unsigned)]
-    if sign(command, password):
+    if (sign_windows if os.name == 'nt' else sign)(command, password):
         raise ValueError('SDK signing failed. Check the selected profile and password access in Certificate Manager.')
     signed = signed_dir / unsigned.name
     check_signed_widget(signed, settings['identity'])
@@ -109,7 +126,7 @@ def main(root=ROOT):
 if __name__ == '__main__':
     try:
         main()
-    except (ValueError, OSError, zipfile.BadZipFile, termios.error) as error:
+    except (ValueError, OSError, zipfile.BadZipFile) + ((termios.error,) if os.name != 'nt' else ()) as error:
         # Known validation messages contain no credentials. Suppress SDK/OS payloads.
         message = str(error) if isinstance(error, ValueError) else 'Cannot complete packaging. Check SDK/profile setup and local file permissions.'
         raise SystemExit(message) from None

@@ -49,7 +49,7 @@ The initial custom XML-signature implementation was rejected by the TV. Use the 
 
 ## Another checkout or Mac
 
-Install the official [Samsung TV SDK](https://developer.samsung.com/smarttv/develop/getting-started/setting-up-sdk/installing-tv-sdk.html) and select its path in `.local/signing.json`. The signing runner uses POSIX terminal/process APIs and is supported by these tools on macOS/Linux; Windows needs its own adapted runner. To retain in-place updates to your own existing app, securely transfer its author certificate and password. Keep those credentials local.
+Install the official [Samsung TV SDK](https://developer.samsung.com/smarttv/develop/getting-started/setting-up-sdk/installing-tv-sdk.html) and select its path in `.local/signing.json`. The signing runner uses POSIX terminal/process APIs on macOS/Linux. On Windows it runs `tools\idein	izen.bat` with stdin closed and relies on the SDK's saved profile passwords; a password prompt fails instead of waiting, and `password_file` is not supported there. To retain in-place updates to your own existing app, securely transfer its author certificate and password. Keep those credentials local.
 
 For new certificates, use Samsung's [certificate setup](https://developer.samsung.com/smarttv/develop/getting-started/setting-up-sdk/creating-certificates.html). The distributor certificate must include the target TV's DUID. A generic emulator certificate does not establish compatibility with this consumer TV.
 
