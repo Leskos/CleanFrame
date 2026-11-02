@@ -827,12 +827,12 @@
   function mode() { for (var i = 0; i < MODES.length; i++) if (MODES[i].id === S.c.mode) return MODES[i]; return MODES[0]; }
   function settingsRows() {
     var n = S.c.home.length;
-    return [{ id: 'background', label: 'Background', value: S.c.bg === 'photo' ? wall(S.c.wall).name : VALUE_NAMES[S.c.bg] },
+    return [{ id: 'samsung', label: 'Samsung', value: 'Home and TV settings' },
+      { id: 'background', label: 'Background', value: S.c.bg === 'photo' ? wall(S.c.wall).name : VALUE_NAMES[S.c.bg] },
       { id: 'layout', label: 'Layout', value: VALUE_NAMES[S.c.layout] },
       { id: 'typography', label: 'Typography', value: FONTS[S.c.font].name },
       { id: 'focus', label: 'Focus', value: VALUE_NAMES[S.c.focus] + (materialApplies() ? ', ' + VALUE_NAMES[S.c.material] : '') },
-      { id: 'editor', label: 'Apps on Home', value: n + (n === 1 ? ' app' : ' apps') },
-      { id: 'samsung', label: 'Samsung', value: 'Home and TV settings' }];
+      { id: 'editor', label: 'Apps on Home', value: n + (n === 1 ? ' app' : ' apps') }];
   }
   function settingsIds() { return settingsRows().map(function (r) { return r.id; }); }
   V.settings = {
@@ -1021,7 +1021,7 @@
   var photoMode = null, photoTransitionToken = 0;
   var sheetEl = $('sheet'), sheetView = $('sheetView');
   var IMG = { photo: $('photo'), mat: $('matImg'), bg: $('sheetBg'), field: $('phFieldImg'), fieldAlt: $('phFieldImgAlt'), utility: $('utFieldImg'), utilityAlt: $('utFieldImgAlt') };
-  var sheetKey = '', slotEls = {}, dockEdgeFrame = 0, dockEdgeUntil = 0, dockAnchorCenter = 960, dockTw = 288;
+  var sheetKey = '', slotEls = {}, dockEdgeFrame = 0, dockEdgeUntil = 0, dockAnchorCenter = 960, dockTw = 288, lastHopAnchor = -1;
   var appliedPalette = null, appliedPhoto = null, appliedFont = null, appliedFontMetrics = null;
 
   /* Curated locked palettes keep the existing rendering path exactly. */
@@ -1280,6 +1280,9 @@
     }
     plate.className = 'plate' + (!n || empty || hs.zone === null ? '' : hs.lifted ? ' on-lift' : tileFocus ? ' on-focus' : tileSel ? ' on-sel' : '');
     plate.style.transform = 'translate3d(' + (anchor * g.pitch) + 'px,0,0)';
+    // Replay the box squash only when the selection actually hops to a new app.
+    if (/ on-/.test(plate.className) && anchor !== lastHopAnchor) { void plate.offsetWidth; plate.className += ' is-hop'; }
+    lastHopAnchor = / on-/.test(plate.className) ? anchor : -1;
 
     cueL.style.left = (g.x - 72) + 'px'; cueR.style.left = (g.x + g.w + 24) + 'px';
     cueL.style.top = cueR.style.top = (g.y + g.h / 2 - 24) + 'px';
