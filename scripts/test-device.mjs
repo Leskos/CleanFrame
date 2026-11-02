@@ -76,6 +76,18 @@ test('regional streaming apps stay distinct and system helpers stay hidden', () 
   assert.equal(apps.find(a => a.name === 'HBO Max').brand, 'hbomax');
 });
 
+test('BBC iPlayer is recognised by its exact name under any regional ID', () => {
+  const h = harness();
+  let apps;
+  h.device.apps((error, value) => { assert.equal(error, null); apps = value; });
+  h.requests[0].ok([
+    { id: 'Region1234.BBCiPlayer', name: 'BBC iPlayer', show: false },
+    { id: 'Other12345.Player', name: 'BBC iPlayer Kids', show: true }
+  ]);
+  assert.equal(apps.find(a => a.name === 'BBC iPlayer').brand, 'bbciplayer');
+  assert.equal(apps.find(a => a.name === 'BBC iPlayer Kids').brand, '');
+});
+
 test('launch keeps its eight-second deadline independently of discovery', () => {
   const h = harness(), results = [];
   h.device.launchApp('Synthetic.App', error => results.push(error));
