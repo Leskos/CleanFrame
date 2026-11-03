@@ -19,7 +19,7 @@ try {
   for (const font of fonts) for (const wall of walls) for (const layout of ['list', 'dock']) for (const material of ['soft', 'frost', 'tint']) for (const end of [false, true]) {
     await page.goto(preview.baseURL + '/home/');
     await page.waitForFunction(() => window.ShoreQA && ShoreQA.ready());
-    await page.evaluate(look => ShoreQA.look(look), { bg: 'photo', wall, layout, material, font, focus: 'glass', apps: 'both', controls: 'text' });
+    await page.evaluate(look => ShoreQA.look(look), { bg: 'photo', wall, layout, material, font, focus: 'glass', apps: 'both', controls: 'text', ...JSON.parse(process.env.GALLERY_LOOK || '{}') });
     await page.waitForFunction(() => ShoreQA.ready());
     await page.evaluate(() => ShoreQA.scene('home'));
     await page.evaluate(({ layout, end }) => ShoreQA.nav(Array(8).fill(layout === 'list' ? end ? 'down' : 'up' : end ? 'right' : 'left')), { layout, end });
