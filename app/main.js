@@ -1875,16 +1875,34 @@
     return audio;
   }
   function tone(ctx, o) {
-    var osc = ctx.createOscillator(), g = ctx.createGain(), t = ctx.currentTime + (o.at || 0), out = g, lp, lfo, depth;
+    var osc = ctx.createOscillator(), g = ctx.createGain(), t = ctx.currentTime + (o.at || 0);
     osc.type = o.type; osc.frequency.setValueAtTime(o.from, t); osc.frequency.exponentialRampToValueAtTime(o.to, t + o.dur);
     g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(o.gain, t + .015); g.gain.exponentialRampToValueAtTime(.0001, t + o.dur);
-    if (o.lowpass) { lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = o.lowpass; osc.connect(lp); lp.connect(g); }
-    else osc.connect(g);
-    if (o.wobble) {
-      lfo = ctx.createOscillator(); depth = ctx.createGain(); lfo.frequency.value = o.wobble; depth.gain.value = o.from * .18;
-      lfo.connect(depth); depth.connect(osc.frequency); lfo.start(t); lfo.stop(t + o.dur + .03);
+    osc.connect(g); g.connect(ctx.destination); osc.start(t); osc.stop(t + o.dur + .03);
+  }
+  /* A parp is a train of irregular flaps: each one snaps open and rings down, with the pitch and
+     strength jittered flap to flap, a sagging pitch and a sputtering tail on the long one. */
+  function parp(ctx, open) {
+    var sr = ctx.sampleRate, dur = open ? .9 : .32, n = Math.floor(sr * dur), buf = ctx.createBuffer(1, n, sr), d = buf.getChannelData(0);
+    var src = ctx.createBufferSource(), lp = ctx.createBiquadFilter(), body = ctx.createBiquadFilter(), g = ctx.createGain();
+    var i = 0, k, t, f0, period, amp, pos, env, prev = 0, tail = open ? .7 : .55;
+    while (i < n) {
+      t = i / n;
+      f0 = (open ? 105 - 45 * t + 14 * Math.sin(t * 11) : 92 - 20 * t) * (.82 + Math.random() * .36);
+      period = Math.max(16, Math.round(sr / f0));
+      amp = (.5 + Math.random() * .5) * (t < .04 ? t / .04 : t > tail ? (1 - t) / (1 - tail) : 1);
+      if (t > tail && Math.random() < .3) amp *= .12;
+      for (k = 0; k < period && i < n; k++, i++) {
+        pos = k / period;
+        env = pos < .06 ? pos / .06 : Math.exp(-(pos - .06) * 5);
+        prev = prev * .55 + amp * env * (.75 * Math.sin(6.283 * pos * 2.3) + .5 * (Math.random() * 2 - 1)) * .45;
+        d[i] = prev;
+      }
     }
-    out.connect(ctx.destination); osc.start(t); osc.stop(t + o.dur + .03);
+    lp.type = 'lowpass'; lp.frequency.value = open ? 700 : 850; lp.Q.value = .8;
+    body.type = 'peaking'; body.frequency.value = 170; body.Q.value = 1.2; body.gain.value = 8;
+    g.gain.value = .22; src.buffer = buf;
+    src.connect(lp); lp.connect(body); body.connect(g); g.connect(ctx.destination); src.start();
   }
   function sound(kind) {
     var ctx, open = kind === 'open';
@@ -1893,7 +1911,7 @@
       if (S.c.sound === 'boop') {
         tone(ctx, { type: 'sine', from: open ? 520 : 820, to: open ? 780 : 660, dur: open ? .12 : .09, gain: .12 });
         if (open) tone(ctx, { type: 'sine', from: 780, to: 1170, at: .1, dur: .16, gain: .1 });
-      } else tone(ctx, { type: 'sawtooth', from: open ? 170 : 140, to: open ? 55 : 80, dur: open ? .62 : .24, gain: .1, lowpass: 900, wobble: open ? 22 : 30 });
+      } else parp(ctx, open);
     } catch (e) { /* Sound is optional; the launcher keeps working without it. */ }
   }
 

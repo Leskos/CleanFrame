@@ -40,7 +40,7 @@ Every Silly Stuff choice defaults to Off except Bouncy box, which keeps the exis
 - Rainbow box fills the focused Dock box with a slowly moving, darkened rainbow; the focused label keeps a text shadow and passes the gallery 3:1 contrast check.
 - Spin on select turns the focused Dock icon once each time focus arrives.
 - Confetti bursts briefly over Home when an app or input is opened, and when the toggle is switched on.
-- Sounds are synthesised with Web Audio on remote key presses: a short sound when Home focus moves and a longer one when something opens. Boop is a soft sine blip; Parp is a low, wobbling raspberry. No audio files are bundled.
+- Sounds are synthesised with Web Audio on remote key presses: a short sound when Home focus moves and a longer one when something opens. Boop is a soft sine blip; Parp is a fart built from a train of irregular low flaps with a sputtering tail, generated fresh each time so no two are alike. No audio files are bundled.
 - Googly eyes sit at the top centre of Home and glance towards the focused app or control, then wobble.
 - Seasons drifts up to 40 snowflakes or 22 leaves down the screen behind the Dock and List.
 

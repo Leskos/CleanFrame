@@ -375,7 +375,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000}
 .msg-acts{position:absolute;left:112px;top:660px;display:flex}
 
 /* Silly Stuff: each rule is keyed to a toggle class or an element that only exists while it is on. */
-.rainbow .plate.on-focus .plate-skin,.rainbow .plate.on-lift .plate-skin{overflow:hidden;background:none!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.34)}
+.rainbow .plate.on-focus .plate-skin,.rainbow .plate.on-lift .plate-skin{overflow:hidden;background:none!important;-webkit-clip-path:inset(0 round 32px);clip-path:inset(0 round 32px);box-shadow:inset 0 1px 0 rgba(255,255,255,.34)}
 .rainbow .plate.on-focus .plate-skin::before,.rainbow .plate.on-lift .plate-skin::before{content:"";position:absolute;left:0;top:0;width:300%;height:100%;background:linear-gradient(90deg,#9b2f4f,#a5602a,#8c7a22,#2f7d4a,#2a6a8f,#5b3f94,#9b2f4f,#a5602a,#8c7a22,#2f7d4a,#2a6a8f,#5b3f94,#9b2f4f);animation:rainbow-run 4s linear infinite;will-change:transform}
 .rainbow .plate.on-focus .plate-skin::after,.rainbow .plate.on-lift .plate-skin::after{content:"";position:absolute;left:0;top:0;right:0;bottom:0;background:rgba(10,8,6,.18)}
 @keyframes rainbow-run{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
