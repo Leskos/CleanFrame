@@ -47,9 +47,12 @@
     newsreader: { name: 'Newsreader', family: 'Study Newsreader', display: 400, ui: 400, clock: 400 }
   };
   var PRIVATE_FONTS = window.CleanFramePrivateFontIDs || [], fontMetrics = {}, unavailableFonts = {}, widthCache = {}, fontRevision = 0, fontsReady = false;
-  var LOOK_VALUES = { bg: ['dark', 'light', 'photo'], layout: ['list', 'dock'], apps: ['icons', 'both', 'text'], font: Object.keys(FONTS).filter(function (id) { return id === 'manrope' || PRIVATE_FONTS.indexOf(id) >= 0; }), controls: ['icons', 'both', 'text'], focus: ['type', 'glass'], material: ['soft', 'frost', 'tint'] };
-  var LOOK_NAMES = { bg: 'Background', layout: 'Layout', apps: 'Apps', font: 'Font', controls: 'Home controls', focus: 'Focus', material: 'Material' };
-  var VALUE_NAMES = { dark: 'Dark', light: 'Light', photo: 'Photo', list: 'List', dock: 'Dock', type: 'Type', glass: 'Glass', soft: 'Soft', frost: 'Frost', tint: 'Clear tint', icons: 'Icons', both: 'Icons and text', text: 'Text' };
+  var LOOK_VALUES = { bg: ['dark', 'light', 'photo'], layout: ['list', 'dock'], apps: ['icons', 'both', 'text'], font: Object.keys(FONTS).filter(function (id) { return id === 'manrope' || PRIVATE_FONTS.indexOf(id) >= 0; }), controls: ['icons', 'both', 'text'], focus: ['type', 'glass'], material: ['soft', 'frost', 'tint'],
+    motion: ['on', 'off'], rainbow: ['on', 'off'], spin: ['on', 'off'], confetti: ['on', 'off'], googly: ['on', 'off'], sound: ['off', 'boop', 'fart'], season: ['off', 'snow', 'leaves'] };
+  /* Silly Stuff toggles only re-render; each effect is inert when off. */
+  var SILLY = ['motion', 'rainbow', 'spin', 'confetti', 'sound', 'googly', 'season'];
+  var LOOK_NAMES = { bg: 'Background', layout: 'Layout', apps: 'Apps', font: 'Font', controls: 'Home controls', focus: 'Focus', material: 'Material', motion: 'Bouncy box', rainbow: 'Rainbow box', spin: 'Spin on select', confetti: 'Confetti', sound: 'Sounds', googly: 'Googly eyes', season: 'Seasons' };
+  var VALUE_NAMES = { dark: 'Dark', light: 'Light', photo: 'Photo', list: 'List', dock: 'Dock', type: 'Type', glass: 'Glass', soft: 'Soft', frost: 'Frost', tint: 'Clear tint', icons: 'Icons', both: 'Icons and text', text: 'Text', on: 'On', off: 'Off', boop: 'Boop', fart: 'Parp', snow: 'Snow', leaves: 'Leaves' };
   var UTIL = { art: ['Art Mode', 'art'], apps: ['All apps', 'apps'], arrange: ['Arrange', 'arrange'], settings: ['Settings', 'settings'] };
   var MSG = {
     leave: { title: 'Leave Home?', line: 'Open Samsung Home?', note: '', actions: [['stay', 'Stay'], ['samsung', 'Samsung Home']] }
@@ -76,7 +79,7 @@
   var REDUCED_MOTION = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   var S = {
     variant: 'B', geom: 'broad', c: null, stack: null,
-    sel: null, selIdx: 0, lastUtil: 0, appsFocus: null, settingsFocus: 'background', appearanceFocus: 'bg', detailFocus: {},
+    sel: null, selIdx: 0, lastUtil: 0, appsFocus: null, settingsFocus: 'background', styleFocus: 'layout', appearanceFocus: 'bg', detailFocus: {},
     undo: [], removedAt: {}, note: null, err: null,
     writes: 0, failed: 0, log: [], logN: 0, lastLaunch: null, press: null,
     wallShown: null, wallPending: null, wallError: null,
@@ -88,7 +91,11 @@
     for (var i = 0; i < list.length; i++) if (list[i].toLowerCase() === v) return list[i];
     return fallback;
   }
-  function lookOf(c) { return { bg: c.bg, wall: c.wall, layout: c.layout, apps: c.apps, font: c.font, controls: c.controls, focus: c.focus, material: c.material }; }
+  function lookOf(c) {
+    var out = { bg: c.bg, wall: c.wall, layout: c.layout, apps: c.apps, font: c.font, controls: c.controls, focus: c.focus, material: c.material };
+    SILLY.forEach(function (k) { out[k] = c[k]; });
+    return out;
+  }
   function materialApplies(c) { c = c || S.c; return c.bg === 'photo' && (c.layout === 'dock' || c.focus === 'glass'); }
 
   /* ---------- Helpers ---------- */
@@ -353,6 +360,9 @@
       apps: pick(modern.apps, LOOK_VALUES.apps, legacyList ? 'text' : 'both'), controls: pick(modern.controls, LOOK_VALUES.controls, 'both'),
       focus: pick(modern.focus, LOOK_VALUES.focus, legacyList ? 'type' : 'glass'), material: pick(modern.material, LOOK_VALUES.material, 'soft'),
       font: pick(modern.font, LOOK_VALUES.font, 'manrope'), wall: wall(modern.wall || s.wallpaper) ? modern.wall || s.wallpaper : WALLS[0].id,
+      motion: pick(modern.motion, LOOK_VALUES.motion, 'on'), rainbow: pick(modern.rainbow, LOOK_VALUES.rainbow, 'off'), spin: pick(modern.spin, LOOK_VALUES.spin, 'off'),
+      confetti: pick(modern.confetti, LOOK_VALUES.confetti, 'off'), sound: pick(modern.sound, LOOK_VALUES.sound, 'off'), googly: pick(modern.googly, LOOK_VALUES.googly, 'off'),
+      season: pick(modern.season, LOOK_VALUES.season, 'off'),
       home: h, recent: recent, lastApp: h.indexOf(s.lastApp) >= 0 ? s.lastApp : h[0],
       mode: pick(s.mode, MODES.map(function (m) { return m.id; }), 'fixed')
     };
@@ -469,6 +479,7 @@
     if (!a || busy) return;
     if (S.c.home.indexOf(id) >= 0) { c = next(S.c.home.slice(), S.c.recent.slice()); c.lastApp = id; write(c, 'Last app'); }
     S.press = id; S.lastLaunch = a.name;
+    sound('open'); confetti();
     if (a.input) perform(a.name, function (done) {
       FrameDevice.setSource(a.input, function (err) { done(!document.hidden && !(err && err.cancelled) ? err : null); });
     });
@@ -515,8 +526,9 @@
   }
   function addAppsRoute() { openEditor('home'); }
   function openSettings() { push({ id: 'settings', f: { id: S.settingsFocus } }); }
+  function openStyle() { push({ id: 'settings', sub: 'style', f: { id: S.styleFocus } }); }
   function openAppearance(group) {
-    var axis = { background: 'bg', layout: 'layout', typography: 'font', focus: 'focus' }[group];
+    var axis = { background: 'bg', layout: 'layout', typography: 'font', focus: 'focus', silly: 'motion' }[group];
     var action = S.detailFocus[group] || (axis ? 'choice.' + axis + '.' + S.c[axis] : group === 'rotation' ? 'rotation.' + S.c.mode : 'samsung.home');
     push({ id: 'appearance', group: group, f: { action: action } });
   }
@@ -825,34 +837,45 @@
 
   /* ---------- Settings, Layout and messages ---------- */
   function mode() { for (var i = 0; i < MODES.length; i++) if (MODES[i].id === S.c.mode) return MODES[i]; return MODES[0]; }
-  function settingsRows() {
+  /* Layout, Typography and Focus sit in a nested Style list. */
+  var STYLE_GROUPS = ['layout', 'typography', 'focus'];
+  function sillyValue() {
+    var on = SILLY.filter(function (k) { return S.c[k] !== (k === 'motion' ? 'on' : 'off'); }).length;
+    return on ? on + ' on' : 'All off';
+  }
+  function settingsRows(sub) {
     var n = S.c.home.length;
+    if (sub === 'style') return [{ id: 'layout', label: 'Layout', value: VALUE_NAMES[S.c.layout] },
+      { id: 'typography', label: 'Typography', value: FONTS[S.c.font].name },
+      { id: 'focus', label: 'Focus', value: VALUE_NAMES[S.c.focus] + (materialApplies() ? ', ' + VALUE_NAMES[S.c.material] : '') }];
     return [{ id: 'samsung', label: 'Samsung', value: 'Home and TV settings' },
       { id: 'background', label: 'Background', value: S.c.bg === 'photo' ? wall(S.c.wall).name : VALUE_NAMES[S.c.bg] },
-      { id: 'layout', label: 'Layout', value: VALUE_NAMES[S.c.layout] },
-      { id: 'typography', label: 'Typography', value: FONTS[S.c.font].name },
-      { id: 'focus', label: 'Focus', value: VALUE_NAMES[S.c.focus] + (materialApplies() ? ', ' + VALUE_NAMES[S.c.material] : '') },
-      { id: 'editor', label: 'Apps', value: n + (n === 1 ? ' app' : ' apps') }];
+      { id: 'style', label: 'Style', value: VALUE_NAMES[S.c.layout] + ', ' + FONTS[S.c.font].name + ', ' + VALUE_NAMES[S.c.focus] },
+      { id: 'editor', label: 'Apps', value: n + (n === 1 ? ' app' : ' apps') },
+      { id: 'silly', label: 'Silly Stuff', value: sillyValue() }];
   }
-  function settingsIds() { return settingsRows().map(function (r) { return r.id; }); }
+  function settingsIds(sub) { return settingsRows(sub).map(function (r) { return r.id; }); }
   V.settings = {
     sheet: true,
-    norm: function (t) { var ids = settingsIds(); if (ids.indexOf(t.f.id) < 0) t.f.id = ids[0]; },
+    norm: function (t) { var ids = settingsIds(t.sub); if (ids.indexOf(t.f.id) < 0) t.f.id = ids[0]; },
     key: function (t, k) {
-      var ids = settingsIds(), i = Math.max(0, ids.indexOf(t.f.id));
+      var ids = settingsIds(t.sub), i = Math.max(0, ids.indexOf(t.f.id));
       if (k === 'up' && i > 0) i--;
       else if (k === 'down' && i < ids.length - 1) i++;
       else if (k === 'back') { pop(); return; }
-      t.f.id = ids[i]; S.settingsFocus = ids[i];
+      t.f.id = ids[i];
+      if (t.sub === 'style') S.styleFocus = ids[i]; else S.settingsFocus = ids[i];
       if (k === 'ok') settingsOk(ids[i]);
     },
     point: function (t, z, i, id) { if (z === 'row' && id) { t.f.id = id; this.key(t, 'ok'); } }
   };
   function settingsOk(id) {
     if (id === 'editor') openEditor('settings');
+    else if (id === 'style') openStyle();
     else openAppearance(id);
   }
-  var DETAIL_NAMES = { background: 'Background', layout: 'Layout', typography: 'Typography', focus: 'Focus', rotation: 'Rotation', samsung: 'Samsung', inputs: 'Inputs' };
+  var DETAIL_NAMES = { background: 'Background', layout: 'Layout', typography: 'Typography', focus: 'Focus', rotation: 'Rotation', samsung: 'Samsung', inputs: 'Inputs', silly: 'Silly Stuff' };
+  function backLabel(t) { return t.group === 'rotation' ? 'Background' : t.group === 'inputs' ? 'Samsung' : STYLE_GROUPS.indexOf(t.group) >= 0 ? 'Style' : 'Settings'; }
   function choice(axis, value, disabled) {
     return { action: axis === 'mode' ? 'rotation.' + value : 'choice.' + axis + '.' + value, axis: axis, value: value, disabled: !!disabled,
       label: axis === 'font' ? FONTS[value].name : axis === 'mode' ? MODES.filter(function (m) { return m.id === value; })[0].name : value === 'both' ? 'Both' : VALUE_NAMES[value] };
@@ -880,6 +903,9 @@
       { id: 'material', title: 'Material', horizontal: true, items: options('material', ['soft', 'frost', 'tint'], inactive),
         reason: inactive ? flat ? 'Materials are available with a Photo background.' : 'Choose Glass focus or the Dock layout to use materials.' : '' }
     ];
+    if (t.group === 'silly') return SILLY.map(function (axis) {
+      return { id: axis, title: LOOK_NAMES[axis], horizontal: true, items: options(axis, axis === 'motion' ? ['off', 'on'] : LOOK_VALUES[axis].slice().sort(function (a, b) { return (b === 'off') - (a === 'off'); })) };
+    });
     if (t.group === 'rotation') return [{ id: 'mode', title: '', items: options('mode', MODES.map(function (m) { return m.id; }), flat),
       reason: flat ? 'Choose Photo in Background to use rotation.' : 'Timed changes pause while Settings or another panel is open.' }];
     return [{ id: 'samsung', title: '', items: [
@@ -889,7 +915,7 @@
     ] }];
   }
   function detailRows(t) {
-    var rows = [[{ action: 'settings.back', label: t.group === 'rotation' ? 'Background' : t.group === 'inputs' ? 'Samsung' : 'Settings' }]];
+    var rows = [[{ action: 'settings.back', label: backLabel(t) }]];
     detailSections(t).forEach(function (section) {
       var enabled = section.items.filter(function (item) { return !item.disabled; });
       if (section.horizontal && enabled.length) rows.push(enabled);
@@ -937,7 +963,11 @@
       if (error && error.row === 'mode') applyRotation(error.patch.mode);
       else if (error) setLook(error.patch, { row: error.row });
     } else if (item.axis === 'mode') applyRotation(item.value);
-    else if (item.axis) { patch[item.axis] = item.value; setLook(patch, { row: item.axis }); }
+    else if (item.axis) {
+      patch[item.axis] = item.value; setLook(patch, { row: item.axis });
+      if (item.axis === 'sound') sound('open');
+      else if (item.axis === 'confetti') confetti();
+    }
     else if (item.action === 'background.wallpaper') openWallpaper();
     else if (item.action === 'background.rotation') openAppearance('rotation');
     else if (item.action === 'samsung.home') perform('Samsung Home', FrameDevice.home);
@@ -954,7 +984,7 @@
   V.appearance = {
     norm: function (t) {
       var rows = detailRows(t), exists = false, applied = null;
-      var axis = { background: 'bg', layout: 'layout', typography: 'font', focus: 'focus', rotation: 'mode' }[t.group];
+      var axis = { background: 'bg', layout: 'layout', typography: 'font', focus: 'focus', rotation: 'mode', silly: 'motion' }[t.group];
       rows.forEach(function (items) { items.forEach(function (item) {
         if (item.action === t.f.action) exists = true;
         if (item.axis === axis && item.value === S.c[axis]) applied = item;
@@ -998,11 +1028,14 @@
 
   /* ---------- Dispatch ---------- */
   function norm() { var t = top(), v = V[t.id]; if (v.norm) v.norm(t); }
+  function homeFocusKey() { var t = top(); return t.id === 'home' ? t.f.zone + '|' + t.f.u + '|' + S.sel : ''; }
   function press(k) {
     norm();
-    var t = top();
+    var t = top(), before = homeFocusKey(), after;
     V[t.id].key(t, k);
     norm();
+    after = homeFocusKey();
+    if (before && after && before !== after) sound('move');
     render();
     syncRotation();
   }
@@ -1052,7 +1085,7 @@
   function render() {
     var t = top(), sheet = !!V[t.id].sheet, shown = wall(S.shown ? S.shown.wall : S.c.wall), palette = ADAPTIVE_INK[shown.id];
     var adaptive = applyAdaptiveInk(palette), tr = adaptive && palette.tr ? palette.tr.pol : shown.ut.tr, br = adaptive && palette.br ? palette.br.pol : shown.ut.br;
-    stage.className = 'stage bg-' + S.c.bg + ' l-' + S.c.layout + ' v-' + S.variant + ' m-' + (materialApplies() ? S.c.material : 'none') + ' f-' + S.c.focus + ' a-' + S.c.apps + ' u-' + S.c.controls + ' g-' + S.geom + ' tone-' + shown.tone + ' tr-' + tr + ' br-' + br + wallClasses(shown) + inkRungClasses(palette, adaptive) + ' at-' + t.id + ' font-' + homeFont() + (homeFont() !== 'manrope' ? ' font-custom' : '') + (S.fontSwitch ? ' is-font-switch' : '') + (adaptive ? ' has-adaptive-ink adaptive-tl-' + palette.tl.pol : '') + (!adaptive && shown.clockInk ? ' has-clock-ink' : '') + (!adaptive && shown.dockClockInk ? ' has-dock-clock-ink' : '') + (registeredMaterial(shown.id) ? ' registered-material' : '') + (sheet ? ' is-sheet' : '') + (S.reflow ? ' is-reflow' : '');
+    stage.className = 'stage bg-' + S.c.bg + ' l-' + S.c.layout + ' v-' + S.variant + ' m-' + (materialApplies() ? S.c.material : 'none') + ' f-' + S.c.focus + ' a-' + S.c.apps + ' u-' + S.c.controls + ' g-' + S.geom + ' tone-' + shown.tone + ' tr-' + tr + ' br-' + br + wallClasses(shown) + inkRungClasses(palette, adaptive) + ' at-' + t.id + ' font-' + homeFont() + (homeFont() !== 'manrope' ? ' font-custom' : '') + (S.fontSwitch ? ' is-font-switch' : '') + (adaptive ? ' has-adaptive-ink adaptive-tl-' + palette.tl.pol : '') + (!adaptive && shown.clockInk ? ' has-clock-ink' : '') + (!adaptive && shown.dockClockInk ? ' has-dock-clock-ink' : '') + (registeredMaterial(shown.id) ? ' registered-material' : '') + (sheet ? ' is-sheet' : '') + (S.reflow ? ' is-reflow' : '') + (S.c.rainbow === 'on' ? ' rainbow' : '') + (S.c.spin === 'on' ? ' spin-on' : '');
     if (!adaptive && shown.clockInk) stage.style.setProperty('--clock-ink', shown.clockInk);
     else stage.style.removeProperty('--clock-ink');
     if (!adaptive && shown.dockClockInk) stage.style.setProperty('--dock-clock-ink', shown.dockClockInk);
@@ -1087,6 +1120,7 @@
     if (S.c.layout === 'list') renderList(hs);
     else { photoMode = null; renderDock(hs); }
     renderAppFocusName(hs);
+    renderSeason(); renderEyes(hs);
   }
 
   function clockText() {
@@ -1269,7 +1303,7 @@
     plate.className = 'plate' + (!n || empty || hs.zone === null ? '' : hs.lifted ? ' on-lift' : tileFocus ? ' on-focus' : tileSel ? ' on-sel' : '');
     plate.style.transform = 'translate3d(' + (anchor * g.pitch) + 'px,0,0)';
     // Replay the box squash only when the selection actually hops to a new app.
-    if (/ on-/.test(plate.className) && anchor !== lastHopAnchor) { void plate.offsetWidth; plate.className += ' is-hop'; }
+    if (S.c.motion !== 'off' && / on-/.test(plate.className) && anchor !== lastHopAnchor) { void plate.offsetWidth; plate.className += ' is-hop'; }
     lastHopAnchor = / on-/.test(plate.className) ? anchor : -1;
 
     cueL.style.left = (g.x - 72) + 'px'; cueR.style.left = (g.x + g.w + 24) + 'px';
@@ -1399,7 +1433,7 @@
     else sheetView.removeAttribute('aria-modal');
     sceneEl.setAttribute('aria-hidden', sheet || isSettingsDetail(t) ? 'true' : 'false');
     if (!sheet) { sheetView.innerHTML = ''; sheetKey = ''; return; }
-    key = t.id + '|' + (t.mode || '') + '|' + (t.msg || '') + '|' + S.variant + '|' + S.c.bg;
+    key = t.id + '|' + (t.mode || '') + '|' + (t.sub || '') + '|' + (t.msg || '') + '|' + S.variant + '|' + S.c.bg;
     if (key !== sheetKey) {
       sheetView.innerHTML = FRAMES[t.id](t);
       sheetKey = key; slotEls = {};
@@ -1425,7 +1459,7 @@
         + ' data-z="detail" data-i="0" data-id="' + item.action + '" data-action="' + item.action + '">' + inner
         + (item.axis ? '<span class="setting-tick" aria-hidden="true">' + (applied ? icon('check') : '') + '</span>' : '') + '</button>';
     }
-    setHTML(appearanceBack, command({ action: 'settings.back', label: t.group === 'rotation' ? 'Background' : t.group === 'inputs' ? 'Samsung' : 'Settings' }, icon('left') + '<span>' + (t.group === 'rotation' ? 'Background' : t.group === 'inputs' ? 'Samsung' : 'Settings') + '</span>', 'setting-back'));
+    setHTML(appearanceBack, command({ action: 'settings.back', label: backLabel(t) }, icon('left') + '<span>' + backLabel(t) + '</span>', 'setting-back'));
     setHTML(appearanceRows, detailSections(t).map(function (section) {
       return '<section class="setting-section' + (section.horizontal ? ' is-horizontal' : '') + ' section-' + section.id + '">'
         + (section.title ? '<h3 class="setting-label" id="setting-' + section.id + '">' + section.title + '</h3>' : '')
@@ -1448,7 +1482,7 @@
         + command({ action: 'settings.retry', label: 'Try again' }, '<span>Try again</span>', 'setting-retry');
     }
     setHTML(appearanceStatus, status);
-    hint = selected.disabled ? '' : selected.action === 'settings.back' ? 'Return to ' + (t.group === 'rotation' ? 'Background' : t.group === 'inputs' ? 'Samsung' : 'Settings') : selected.action === 'settings.retry' ? 'Retry this change' : selected.axis ? 'Apply selected setting' : selected.action === 'background.wallpaper' ? 'Choose a wallpaper' : selected.action === 'background.rotation' ? 'Choose a rotation interval' : 'Open on the TV';
+    hint = selected.disabled ? '' : selected.action === 'settings.back' ? 'Return to ' + backLabel(t) : selected.action === 'settings.retry' ? 'Retry this change' : selected.axis ? 'Apply selected setting' : selected.action === 'background.wallpaper' ? 'Choose a wallpaper' : selected.action === 'background.rotation' ? 'Choose a rotation interval' : 'Open on the TV';
     setHTML(appearanceDesc, hint ? '<span class="remote-key">OK</span><span>' + esc(hint) + '</span>' : '');
   }
   function renderWallpaper(t) {
@@ -1542,7 +1576,7 @@
         + '<div class="ed-home" data-slot="home"></div><div class="ed-order-break" data-slot="break"></div><div class="ed-other-view" data-slot="ov"><div class="ed-other" data-slot="other"></div></div><div class="ed-origin" data-slot="origin"></div>'
         + '<div class="row-cue editor-before" data-slot="otherBefore" aria-hidden="true">' + icon('up') + '</div><div class="row-cue editor-after" data-slot="otherAfter" aria-hidden="true">' + icon('down') + '</div>';
     },
-    settings: function () { return '<h2 class="s-title">Settings</h2><div class="settings-overview" data-slot="list"></div>'; },
+    settings: function (t) { return '<h2 class="s-title">' + (t.sub === 'style' ? 'Style' : 'Settings') + '</h2><div class="settings-overview" data-slot="list"></div>'; },
     message: function (t) {
       var m = messageContent(t);
       return '<h2 class="msg-title">' + esc(m.title) + '</h2><p class="msg-line">' + esc(m.line) + '</p><p class="msg-note">' + esc(m.note) + '</p><div class="msg-acts" data-slot="acts"></div>';
@@ -1635,7 +1669,7 @@
     },
     settings: function (t, el) {
       var html = '';
-      settingsRows().forEach(function (r) {
+      settingsRows(t.sub).forEach(function (r) {
         html += '<button type="button" tabindex="-1" class="settings-group' + (r.id === t.f.id ? ' is-focus' : '') + '" data-z="row" data-i="0" data-id="' + r.id + '" data-action="settings.' + (r.id === 'editor' ? 'editor' : 'group.' + r.id) + '"><span class="settings-group-copy"><span class="settings-group-name">' + esc(r.label) + '</span><span class="settings-group-value">' + esc(r.value) + '</span></span>' + icon('right') + '</button>';
       });
       setHTML(el.list, html);
@@ -1777,6 +1811,110 @@
     else setLook({}, { transient: true });
   }
 
+  /* ---------- Silly Stuff ----------
+     Every effect builds nothing and runs nothing while its toggle is off. */
+  var funEl = $('fun'), seasonEl = null, seasonShown = 'off', eyesEl = null, eyesKey = '', audio = null;
+  var LEAF_COLOURS = ['#c8541f', '#e08a1e', '#a8321c', '#d9b02a', '#8f5a1e'];
+  var CONFETTI_COLOURS = ['#ff5a5f', '#ffb400', '#3ec1d3', '#7bd389', '#a26bfa', '#ff7ac6'];
+  function rand(a, b) { return a + Math.random() * (b - a); }
+  function renderSeason() {
+    var kind = REDUCED_MOTION ? 'off' : S.c.season, html = '', snow = kind === 'snow', n, i, size;
+    if (kind === seasonShown) return;
+    seasonShown = kind;
+    if (seasonEl) { funEl.removeChild(seasonEl); seasonEl = null; }
+    if (kind === 'off') return;
+    n = snow ? 40 : 22;
+    for (i = 0; i < n; i++) {
+      size = snow ? rand(6, 16) : rand(24, 38);
+      html += '<i class="flake" style="left:' + rand(-40, 1900).toFixed(0) + 'px;width:' + size.toFixed(0) + 'px;height:' + (snow ? size : size * .62).toFixed(0) + 'px;'
+        + 'animation-duration:' + rand(snow ? 10 : 12, snow ? 19 : 22).toFixed(1) + 's;animation-delay:-' + rand(0, 22).toFixed(1) + 's;'
+        + (snow ? 'opacity:' + rand(.55, .95).toFixed(2) : 'background:' + LEAF_COLOURS[i % LEAF_COLOURS.length]) + '"></i>';
+    }
+    seasonEl = document.createElement('div'); seasonEl.className = 'season season-' + kind; seasonEl.innerHTML = html;
+    funEl.insertBefore(seasonEl, funEl.firstChild);
+  }
+  /* The pupils glance towards the focused app or control, then wobble. */
+  function renderEyes(hs) {
+    var n = S.c.home.length, d = n > 1 ? hs.i / (n - 1) * 2 - 1 : 0, list = S.c.layout === 'list', x, y, key;
+    if (S.c.googly !== 'on') { if (eyesEl) { funEl.removeChild(eyesEl); eyesEl = null; eyesKey = ''; } return; }
+    if (!eyesEl) {
+      eyesEl = document.createElement('div'); eyesEl.className = 'eyes';
+      eyesEl.innerHTML = '<i class="eye"><b class="pupil"><s></s></b></i><i class="eye"><b class="pupil"><s></s></b></i>';
+      funEl.appendChild(eyesEl);
+    }
+    if (hs.zone === 'util') { x = .9; y = list ? .8 : -.2; }
+    else if (list) { x = -.85; y = d * .9; }
+    else { x = d * .95; y = .8; }
+    key = x.toFixed(2) + ',' + y.toFixed(2);
+    if (key === eyesKey) return;
+    eyesKey = key;
+    Array.prototype.forEach.call(eyesEl.querySelectorAll('.pupil'), function (p) {
+      p.style.transform = 'translate3d(' + (x * 15).toFixed(1) + 'px,' + (y * 15).toFixed(1) + 'px,0)';
+      p.className = 'pupil'; void p.offsetWidth; p.className = 'pupil is-wobble';
+    });
+  }
+  function confetti() {
+    var box, bits, i, a, r;
+    if (S.c.confetti !== 'on' || REDUCED_MOTION) return;
+    box = document.createElement('div'); box.className = 'confetti';
+    for (i = 0; i < 28; i++) box.innerHTML += '<i style="background:' + CONFETTI_COLOURS[i % CONFETTI_COLOURS.length] + (i % 3 ? '' : ';border-radius:50%') + '"></i>';
+    funEl.appendChild(box);
+    bits = box.childNodes; void box.offsetWidth;
+    for (i = 0; i < bits.length; i++) {
+      a = rand(-Math.PI * .95, -Math.PI * .05); r = rand(260, 620);
+      bits[i].style.transform = 'translate3d(' + (Math.cos(a) * r * 1.5).toFixed(0) + 'px,' + (Math.sin(a) * r + rand(80, 260)).toFixed(0) + 'px,0) rotate(' + rand(-540, 540).toFixed(0) + 'deg)';
+      bits[i].style.opacity = '0';
+    }
+    setTimeout(function () { if (box.parentNode) box.parentNode.removeChild(box); }, 1400);
+  }
+  /* Synthesised on the remote key press, so no audio files are bundled. */
+  function audioContext() {
+    var A = window.AudioContext || window.webkitAudioContext;
+    if (!audio && A) { try { audio = new A(); } catch (e) { audio = null; } }
+    if (audio && audio.state === 'suspended' && audio.resume) audio.resume();
+    return audio;
+  }
+  function tone(ctx, o) {
+    var osc = ctx.createOscillator(), g = ctx.createGain(), t = ctx.currentTime + (o.at || 0);
+    osc.type = o.type; osc.frequency.setValueAtTime(o.from, t); osc.frequency.exponentialRampToValueAtTime(o.to, t + o.dur);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(o.gain, t + .015); g.gain.exponentialRampToValueAtTime(.0001, t + o.dur);
+    osc.connect(g); g.connect(ctx.destination); osc.start(t); osc.stop(t + o.dur + .03);
+  }
+  /* A parp is a train of irregular flaps: each one snaps open and rings down, with the pitch and
+     strength jittered flap to flap, a sagging pitch and a sputtering tail on the long one. */
+  function parp(ctx, open) {
+    var sr = ctx.sampleRate, dur = open ? .9 : .32, n = Math.floor(sr * dur), buf = ctx.createBuffer(1, n, sr), d = buf.getChannelData(0);
+    var src = ctx.createBufferSource(), lp = ctx.createBiquadFilter(), body = ctx.createBiquadFilter(), g = ctx.createGain();
+    var i = 0, k, t, f0, period, amp, pos, env, prev = 0, tail = open ? .7 : .55;
+    while (i < n) {
+      t = i / n;
+      f0 = (open ? 105 - 45 * t + 14 * Math.sin(t * 11) : 92 - 20 * t) * (.82 + Math.random() * .36);
+      period = Math.max(16, Math.round(sr / f0));
+      amp = (.5 + Math.random() * .5) * (t < .04 ? t / .04 : t > tail ? (1 - t) / (1 - tail) : 1);
+      if (t > tail && Math.random() < .3) amp *= .12;
+      for (k = 0; k < period && i < n; k++, i++) {
+        pos = k / period;
+        env = pos < .06 ? pos / .06 : Math.exp(-(pos - .06) * 5);
+        prev = prev * .55 + amp * env * (.75 * Math.sin(6.283 * pos * 2.3) + .5 * (Math.random() * 2 - 1)) * .45;
+        d[i] = prev;
+      }
+    }
+    lp.type = 'lowpass'; lp.frequency.value = open ? 700 : 850; lp.Q.value = .8;
+    body.type = 'peaking'; body.frequency.value = 170; body.Q.value = 1.2; body.gain.value = 8;
+    g.gain.value = .22; src.buffer = buf;
+    src.connect(lp); lp.connect(body); body.connect(g); g.connect(ctx.destination); src.start();
+  }
+  function sound(kind) {
+    var ctx, open = kind === 'open';
+    if (S.c.sound === 'off' || !(ctx = audioContext())) return;
+    try {
+      if (S.c.sound === 'boop') {
+        tone(ctx, { type: 'sine', from: open ? 520 : 820, to: open ? 780 : 660, dur: open ? .12 : .09, gain: .12 });
+        if (open) tone(ctx, { type: 'sine', from: 780, to: 1170, at: .1, dur: .16, gain: .1 });
+      } else parp(ctx, open);
+    } catch (e) { /* Sound is optional; the launcher keeps working without it. */ }
+  }
+
   /* ---------- Lifecycle and remote input ---------- */
   var clockTimer = 0, rotationTimer = 0, activeSince = 0, activeMs = 0, rotationKey = '';
   function rotationActive() { return !document.hidden && top().id === 'home' && S.c.bg === 'photo' && !S.pending && mode().min > 0; }
@@ -1902,6 +2040,7 @@
     out.rotation = { activeMs: activeMs + (activeSince ? Date.now() - activeSince : 0), active: !!activeSince };
     out.draft = t.lifted ? { id: t.lifted.id, order: t.lifted.order.slice() } : null;
     out.settingsGroup = t.id === 'wallpaper' ? 'wallpaper' : t.id === 'appearance' ? t.group : null;
+    out.settingsList = t.id === 'settings' ? t.sub || 'settings' : null;
     out.focusedChoice = item && item.axis ? { axis: item.axis, value: item.value, action: item.action, disabled: item.disabled } : null;
     out.candidate = out.focusedChoice ? { axis: item.axis, value: item.value, action: item.action, pending: !!S.pending, pendingTarget: S.pending ? S.pending.target : null } : null;
     out.wallpaperPicker = t.id === 'wallpaper' ? { candidate: WALLS[t.i].id, applied: S.c.wall, shown: S.wallShown, pending: t.previewDue || S.wallPending,

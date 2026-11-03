@@ -143,8 +143,11 @@ const nav = (...keys) => call('nav', keys);
 async function act(action) { const result = await call('activate', action); if (result === null || result === false) throw Error('Action unavailable: ' + action); return result; }
 async function scene(name) { await call('scene', name); await current.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))); }
 async function look(patch) { await call('look', patch); await ready(); }
+const STYLE_GROUPS = ['layout', 'typography', 'focus'];
 async function group(name) {
-  await scene('settings'); await act('settings.group.' + name);
+  await scene('settings');
+  if (STYLE_GROUPS.includes(name)) await act('settings.group.style');
+  await act('settings.group.' + name);
   await current.waitForFunction(expected => ShoreQA.state().settingsGroup === expected, name);
 }
 const settingsSnapshot = () => current.evaluate(() => {
@@ -401,7 +404,7 @@ try {
         const scale = document.getElementById('stage').getBoundingClientRect().width / 1920;
         return elements.map(e => (e.querySelector('.ico').getBoundingClientRect().left - e.querySelector('.settings-group-copy').getBoundingClientRect().right) / scale);
       });
-      check('Settings group arrows stay separate from their copy at ' + width, groups.length === 6 && groups.every(gap => gap >= 31.5), groups);
+      check('Settings group arrows stay separate from their copy at ' + width, groups.length === 5 && groups.every(gap => gap >= 31.5), groups);
       await wallpaper();
       const caption = await current.locator('.wallpaper-preview-name').evaluate(e => {
         const scale = document.getElementById('stage').getBoundingClientRect().width / 1920;
@@ -593,8 +596,16 @@ try {
   });
   await run('Settings overview and visible choices', async () => {
     await page(); await scene('settings');
-    const expected = ['settings.group.background', 'settings.group.layout', 'settings.group.typography', 'settings.group.focus', 'settings.editor', 'settings.group.samsung'];
-    check('Overview has all six settings groups', same((await call('actions')).filter(a => expected.includes(a)).sort(), expected.slice().sort()));
+    const expected = ['settings.group.samsung', 'settings.group.background', 'settings.group.style', 'settings.editor', 'settings.group.silly'];
+    check('Overview lists Samsung, Background, Style, Apps and Silly Stuff in order', same((await call('actions')).filter(a => a.startsWith('settings.')), expected), await call('actions'));
+    await act('settings.group.style');
+    check('Style lists Layout, Typography and Focus', (await state()).settingsList === 'style' && same((await call('actions')).filter(a => a.startsWith('settings.')), ['settings.group.layout', 'settings.group.typography', 'settings.group.focus']), await call('actions'));
+    await act('settings.group.focus'); await nav('back');
+    check('Focus Back returns to the Style list', (await state()).settingsList === 'style' && (await state()).focusAction === 'settings.group.focus');
+    await nav('back');
+    check('Style Back returns to Settings on its row', (await state()).settingsList === 'settings' && (await state()).focusAction === 'settings.group.style');
+    await group('layout');
+    check('Style details name Style on their Back control', (await current.locator('#appearanceBack').textContent()).trim() === 'Style');
     const specs = {
       background: { bg: ['dark', 'light', 'photo'] },
       layout: { layout: ['list', 'dock'], apps: ['icons', 'both', 'text'], controls: ['icons', 'both', 'text'] },
@@ -624,6 +635,40 @@ try {
     await group('samsung');
     const samsungActions = await call('actions');
     check('Samsung group shows both native actions', samsungActions.includes('samsung.home') && samsungActions.includes('samsung.settings'));
+  });
+  await run('Silly Stuff toggles are saved and inert when off', async () => {
+    await page();
+    const fun = () => current.evaluate(() => ({ children: document.getElementById('fun').children.length, stage: document.getElementById('stage').className }));
+    const defaults = await state();
+    check('Silly Stuff defaults: bouncy box on, everything else off', defaults.look.motion === 'on' && ['rainbow', 'spin', 'confetti', 'googly'].every(k => defaults.look[k] === 'off') && defaults.look.sound === 'off' && defaults.look.season === 'off', defaults.look);
+    const idle = await fun();
+    check('Effects build nothing while off', idle.children === 0 && !/\b(rainbow|spin-on)\b/.test(idle.stage), idle);
+    await group('silly');
+    const specs = { motion: ['off', 'on'], rainbow: ['off', 'on'], spin: ['off', 'on'], confetti: ['off', 'on'], sound: ['off', 'boop', 'fart'], googly: ['off', 'on'], season: ['off', 'snow', 'leaves'] };
+    const options = await radios();
+    for (const [axis, values] of Object.entries(specs)) {
+      const rows = options.filter(r => r.action.startsWith('choice.' + axis + '.'));
+      check('Silly Stuff shows every ' + axis + ' choice', same(rows.map(r => r.action), values.map(v => 'choice.' + axis + '.' + v)), rows);
+    }
+    for (const [axis, value] of [['rainbow', 'on'], ['spin', 'on'], ['googly', 'on'], ['season', 'snow'], ['sound', 'boop'], ['motion', 'off']]) {
+      const before = await state(); await choice(axis, value); await ready();
+      const after = await state();
+      check(axis + ' OK applies ' + value + ' once and saves it', after.look[axis] === value && (await stored()).look[axis] === value && after.writes === before.writes + 1);
+    }
+    const on = await fun();
+    check('Rainbow and spin set their stage classes', /\brainbow\b/.test(on.stage) && /\bspin-on\b/.test(on.stage), on.stage);
+    check('Googly eyes and snow build their layers', await current.evaluate(() => !!document.querySelector('#fun .eyes') && document.querySelectorAll('#fun .season-snow .flake').length > 0 && document.querySelectorAll('#fun .season-snow .flake').length <= 50));
+    await nav('back');
+    check('Settings shows how many silly things are on', (await current.locator('[data-action="settings.group.silly"]').textContent()).includes('6 on'));
+    await current.reload(); await ready();
+    check('Silly Stuff survives reload', (await state()).look.season === 'snow' && (await state()).look.googly === 'on' && (await state()).look.motion === 'off');
+    await look({ rainbow: 'off', spin: 'off', googly: 'off', season: 'off', sound: 'off', motion: 'on' });
+    const cleared = await fun();
+    check('Switching effects off tears their layers down', cleared.children === 0 && !/\b(rainbow|spin-on)\b/.test(cleared.stage), cleared);
+    await look({ confetti: 'on' }); await scene('home'); await nav('ok');
+    check('Confetti bursts on launch', await current.evaluate(() => document.querySelectorAll('#fun .confetti i').length > 0));
+    await current.waitForFunction(() => !document.querySelector('#fun .confetti'), null, { timeout: 4000 });
+    check('Confetti cleans itself up', true);
   });
   await run('Settings focus never changes the applied Home', async () => {
     await page();
@@ -741,8 +786,8 @@ try {
   });
   await run('Settings normalises remembered inactive focus', async () => {
     await page(); await group('focus'); await choice('material', 'tint'); await ready();
-    await nav('back'); await act('settings.group.background'); await choice('bg', 'dark'); await ready();
-    await nav('back'); await act('settings.group.focus');
+    await group('background'); await choice('bg', 'dark'); await ready();
+    await group('focus');
     const focus = await focusedChoice();
     check('Inactive remembered Material returns to an enabled focus choice', focus && !focus.disabled && focus.action.startsWith('choice.focus.'), focus);
     check('Changing Background preserves remembered Material', (await state()).look.material === 'tint');
@@ -812,7 +857,7 @@ try {
     for (const width of [1920, 1280]) {
       await current.setViewportSize({ width, height: width * 9 / 16 });
       await current.waitForFunction(w => Math.abs(document.getElementById('stage').getBoundingClientRect().width - w) < 1, width);
-      for (const name of ['background', 'layout', 'typography', 'focus', 'samsung', 'rotation']) {
+      for (const name of ['background', 'layout', 'typography', 'focus', 'samsung', 'rotation', 'silly']) {
         await group(name === 'rotation' ? 'background' : name);
         if (name === 'rotation') await act('background.rotation');
         const geometry = await current.evaluate(() => {

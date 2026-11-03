@@ -374,6 +374,35 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000}
 .msg-note{position:absolute;left:140px;top:540px;max-width:1200px;font-size:30px;line-height:42px;color:var(--mute)}
 .msg-acts{position:absolute;left:112px;top:660px;display:flex}
 
+/* Silly Stuff: each rule is keyed to a toggle class or an element that only exists while it is on. */
+.rainbow .plate.on-focus .plate-skin,.rainbow .plate.on-lift .plate-skin{overflow:hidden;background:none!important;-webkit-clip-path:inset(0 round 32px);clip-path:inset(0 round 32px);box-shadow:inset 0 1px 0 rgba(255,255,255,.34)}
+.rainbow .plate.on-focus .plate-skin::before,.rainbow .plate.on-lift .plate-skin::before{content:"";position:absolute;left:0;top:0;width:300%;height:100%;background:linear-gradient(90deg,#9b2f4f,#a5602a,#8c7a22,#2f7d4a,#2a6a8f,#5b3f94,#9b2f4f,#a5602a,#8c7a22,#2f7d4a,#2a6a8f,#5b3f94,#9b2f4f);animation:rainbow-run 4s linear infinite;will-change:transform}
+.rainbow .plate.on-focus .plate-skin::after,.rainbow .plate.on-lift .plate-skin::after{content:"";position:absolute;left:0;top:0;right:0;bottom:0;background:rgba(10,8,6,.18)}
+@keyframes rainbow-run{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
+.rainbow .tile.is-focus .label,.rainbow .tile.is-focus .t-name{color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.55),0 0 10px rgba(0,0,0,.35)}
+.spin-on .tile.is-focus .mark{animation:icon-spin 520ms var(--ease)}
+@keyframes icon-spin{0%{transform:translateY(-6px) scale(1.16) rotate(0)}100%{transform:translateY(-6px) scale(1.16) rotate(360deg)}}
+.fun{position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none;overflow:hidden}
+.season .flake{position:absolute;top:-60px;border-radius:50%;background:#fff;box-shadow:0 0 4px rgba(20,24,28,.28);animation:snow-fall linear infinite;will-change:transform}
+.season-leaves .flake{border-radius:0 80% 0 80%;box-shadow:none;animation-name:leaf-fall}
+@keyframes snow-fall{0%{transform:translate3d(0,0,0)}50%{transform:translate3d(40px,600px,0)}100%{transform:translate3d(-20px,1200px,0)}}
+@keyframes leaf-fall{0%{transform:translate3d(0,0,0) rotate(0)}50%{transform:translate3d(90px,600px,0) rotate(200deg)}100%{transform:translate3d(-30px,1200px,0) rotate(420deg)}}
+.eyes{position:absolute;left:868px;top:44px;width:184px;height:84px}
+.eye{position:absolute;top:0;width:84px;height:84px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px #1d1a16,0 4px 12px rgba(0,0,0,.35)}
+.eye+.eye{left:100px}
+.pupil{position:absolute;left:24px;top:24px;width:36px;height:36px;transition:transform 460ms cubic-bezier(.3,1.9,.5,.8)}
+.pupil s{display:block;width:36px;height:36px;border-radius:50%;background:#14110e;box-shadow:inset 9px -9px 0 -6px rgba(255,255,255,.85)}
+.pupil.is-wobble s{animation:googly 760ms ease-out}
+@keyframes googly{0%{transform:translate3d(0,0,0)}18%{transform:translate3d(6px,-5px,0)}36%{transform:translate3d(-5px,4px,0)}54%{transform:translate3d(3px,-3px,0)}72%{transform:translate3d(-2px,1px,0)}100%{transform:translate3d(0,0,0)}}
+.confetti{position:absolute;left:960px;top:620px}
+.confetti i{position:absolute;left:-8px;top:-8px;width:16px;height:16px;transition:transform 1100ms cubic-bezier(.12,.7,.35,1),opacity 1100ms cubic-bezier(.6,0,.9,.5)}
+.detail-silly .appearance-rows{top:232px;width:700px}
+.detail-silly .setting-section{display:flex;align-items:center}
+.detail-silly .setting-section+.setting-section{margin-top:12px}
+.detail-silly .setting-label{flex:none;width:228px;margin:0;font-size:28px}
+.detail-silly .setting-options{flex:1;min-width:0}
+.detail-silly .is-horizontal .setting-choice{min-height:72px;padding:8px 14px;font-size:30px;line-height:40px}
+
 @media (prefers-reduced-motion:reduce){
   .stage,.stage *{transition:none!important;animation:none!important}
   .tile .mark,.tile .label,.gt .mark{transform:none!important;animation:none!important}

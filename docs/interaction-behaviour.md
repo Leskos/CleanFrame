@@ -12,7 +12,7 @@
 
 ## Settings and appearance
 
-Settings opens a grouped overview: Background, Layout, Typography, Focus, Apps on Home and Samsung. OK opens a group. Appearance groups use a two-pane screen with visible choices on the left and the committed Home preview on the right.
+Settings opens a grouped overview: Samsung, Background, Style, Apps and Silly Stuff. Style is a nested list holding Layout, Typography and Focus; their Back control returns to Style, and Back from Style returns to its Settings row. OK opens a group. Appearance groups use a two-pane screen with visible choices on the left and the committed Home preview on the right.
 
 | Group | Choices |
 | --- | --- |
@@ -21,6 +21,7 @@ Settings opens a grouped overview: Background, Layout, Typography, Focus, Apps o
 | Typography | Manrope, Neue Montreal, Mori, Pangram Sans, Geist and Newsreader, when available |
 | Focus | Type or Glass; Soft, Frost or Clear tint material |
 | Apps on Home | Membership and arrangement editor |
+| Silly Stuff | Bouncy box, Rainbow box, Spin on select, Confetti, Sounds (Off, Boop, Parp), Googly eyes and Seasons (Off, Snow, Leaves) |
 | Samsung | Samsung Home, TV settings and Inputs |
 
 Up/Down moves between rows. Left/Right moves between choices in a horizontal row. Focus alone changes neither the preview nor saved preferences in these appearance groups. Wallpaper has its own temporary photo preview, described below. OK applies the focused value. A checkmark identifies the applied value; the filled plate identifies remote focus. Applying the current value does not write again.
@@ -30,6 +31,20 @@ Material applies to a photographic Dock, or Glass focus on a photographic List. 
 A font or photo change applies only after its resources are ready and storage succeeds. A load or storage failure keeps the previous appearance and checkmark, with a Try again action. Back cancels a pending change, leaves the group and keeps completed changes. Late load callbacks cannot apply a cancelled choice. There is no Save button. Returning to a group restores its last choice focus; returning to Settings restores its category focus. Rotation is nested within Background, and Back returns to its Rotation row.
 
 The selected font applies to Home app names, the clock and Home controls, including Newsreader. Settings, All apps, the Home editor and status text retain Manrope. The preview shows the committed Home appearance and its clock continues to update. Pangram faces are available in Nathan's private build when the local files are present; their binaries are not included in the public source. An unavailable optional face is omitted. If the baseline font is slow or missing, Home remains usable with a local fallback and can recover when the font loads.
+
+## Silly Stuff
+
+Every Silly Stuff choice defaults to Off except Bouncy box, which keeps the existing selection-box squash. An effect that is off creates no elements, animations or audio context.
+
+- Bouncy box squashes the Dock selection box on each hop.
+- Rainbow box fills the focused Dock box with a slowly moving, darkened rainbow; the focused label keeps a text shadow and passes the gallery 3:1 contrast check.
+- Spin on select turns the focused Dock icon once each time focus arrives.
+- Confetti bursts briefly over Home when an app or input is opened, and when the toggle is switched on.
+- Sounds are synthesised with Web Audio on remote key presses: a short sound when Home focus moves and a longer one when something opens. Boop is a soft sine blip; Parp is a fart built from a train of irregular low flaps with a sputtering tail, generated fresh each time so no two are alike. No audio files are bundled.
+- Googly eyes sit at the top centre of Home and glance towards the focused app or control, then wobble.
+- Seasons drifts up to 40 snowflakes or 22 leaves down the screen behind the Dock and List.
+
+Reduced motion suppresses confetti, seasons and the other animations. Rainbow box, spin and confetti apply to the Dock; the List layout keeps its glass focus.
 
 ## Streaming apps
 
